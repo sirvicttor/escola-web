@@ -10,10 +10,19 @@ import { useCallback, useEffect, useState } from 'react'
 export default function Alunos() {
     const [alunos, setAlunos] = useState<AlunoComRelacoes[]>([])
     const router = useRouter()
+    const [carregando, setCarregando] = useState(false)
 
     const buscarAlunos = useCallback(async () => {
-        const alunosApi = await alunoService.listar()
-        setAlunos(alunosApi)
+        setCarregando(true)
+        try {
+
+            const alunosApi = await alunoService.listar()
+            setAlunos(alunosApi)
+        } catch (error) {
+            console.log('Erro ao carregar alunos da API')
+        } finally {
+            setCarregando(false)
+        }
     }, [])
 
     useEffect(() => {
@@ -25,7 +34,7 @@ export default function Alunos() {
             <section className="flex justify-content-end">
                 <Button link icon="pi pi-plus" outlined label="Cadastrar aluno" onClick={() => router.push('/alunos/cadastrar')}></Button>
             </section>
-            <DataTable emptyMessage="Nenhum aluno encontrado" value={alunos}>
+            <DataTable emptyMessage="Nenhum aluno encontrado" value={alunos} loading={carregando}>
                 <Column header="Matricula" field="matricula"></Column>
                 <Column header="Nome" field="nome"></Column>
                 <Column

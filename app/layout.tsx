@@ -1,26 +1,29 @@
-'use client';
-import { LayoutProvider } from '../layout/context/layoutcontext';
-import { PrimeReactProvider } from 'primereact/api';
-import 'primereact/resources/primereact.css';
-import 'primeflex/primeflex.css';
-import 'primeicons/primeicons.css';
-import '../styles/layout/layout.scss';
+import { cookies } from 'next/headers'
+import Providers from './providers'
+import { DEFAULT_LAYOUT_CONFIG, LAYOUT_CONFIG_COOKIE, parseLayoutConfigCookie } from '../layout/context/layoutConfigStorage'
+import { LayoutConfig } from '@/types'
+import 'primereact/resources/primereact.css'
+import 'primeflex/primeflex.css'
+import 'primeicons/primeicons.css'
+import '../styles/layout/layout.scss'
 
 interface RootLayoutProps {
-    children: React.ReactNode;
+    children: React.ReactNode
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+    // Lê as preferências salvas no cookie para já renderizar o tema correto no servidor
+    const savedConfig = parseLayoutConfigCookie(cookies().get(LAYOUT_CONFIG_COOKIE)?.value)
+    const layoutConfig: LayoutConfig = { ...DEFAULT_LAYOUT_CONFIG, ...savedConfig }
+
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" style={{ fontSize: `${layoutConfig.scale}px` }} suppressHydrationWarning>
             <head>
-                <link id="theme-css" href={`/themes/lara-light-teal/theme.css`} rel="stylesheet"></link>
+                <link id="theme-css" href={`/themes/${layoutConfig.theme}/theme.css`} rel="stylesheet"></link>
             </head>
             <body>
-                <PrimeReactProvider>
-                    <LayoutProvider>{children}</LayoutProvider>
-                </PrimeReactProvider>
+                <Providers initialLayoutConfig={layoutConfig}>{children}</Providers>
             </body>
         </html>
-    );
+    )
 }
